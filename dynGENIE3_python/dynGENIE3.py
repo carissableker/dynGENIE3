@@ -359,7 +359,12 @@ def dynGENIE3(TS_data,
                 'The length of the i-th vector of time_points must be equal to the number of rows in the i-th array of TS_data'
             )
 
-    if alpha != 'from_data':
+    if isinstance(alpha, str):
+        if alpha != 'from_data':
+            raise ValueError(
+                "input argument alpha must be either 'from_data', a positive number or a vector of positive numbers"
+            )
+    else:
         if not isinstance(alpha, (list, tuple, np.ndarray, int, float)):
             raise ValueError(
                 "input argument alpha must be either 'from_data', a positive number or a vector of positive numbers"
@@ -471,7 +476,7 @@ def dynGENIE3(TS_data,
         expr_data = TS_data[i]
         TS_data[i] = expr_data[indices, :]
 
-    if alpha == 'from_data':
+    if isinstance(alpha, str) and alpha == 'from_data':
         alphas = estimate_degradation_rates(TS_data, time_points)
     elif isinstance(alpha, (int, float)):
         alphas = np.zeros(ngenes) + float(alpha)
