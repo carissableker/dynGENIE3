@@ -591,7 +591,7 @@ def dynGENIE3_single(TS_data, time_points, SS_data, output_idx, alpha,
 
     ngenes = TS_data[0].shape[1]
     nexp = len(TS_data)
-    nsamples_time = sum([expr_data.shape[0] for expr_data in TS_data])
+    nsamples_time = np.sum([expr_data.shape[0] for expr_data in TS_data])
     ninputs = len(input_idx)
 
     # Construct learning sample
@@ -677,7 +677,7 @@ def dynGENIE3_single(TS_data, time_points, SS_data, output_idx, alpha,
     vi[output_idx] = 0
 
     # Normalize importance scores
-    vi_sum = sum(vi)
+    vi_sum = np.sum(vi)
     if vi_sum > 0:
         vi = vi / vi_sum
 
@@ -737,7 +737,7 @@ def dynGENIE3_single(TS_data, time_points, SS_data, output_idx, alpha,
         importances_by_tree = importances_by_tree + uniform(
             low=1e-12, high=1e-11, size=importances_by_tree.shape)
 
-        if sum(importances_by_tree) > 0:
+        if np.sum(importances_by_tree) > 0:
 
             # Ranking of candidate regulators
             ranking_by_tree = [
