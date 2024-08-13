@@ -11,7 +11,6 @@ from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import BaseDecisionTree
 
-
 def compute_feature_importances(estimator):
     """Computes variable importances from a trained tree-based model.
     """
@@ -31,7 +30,9 @@ def get_link_list(VIM,
                   gene_names=None,
                   regulators='all',
                   maxcount='all',
-                  file_name=None):
+                  permute0=True,
+                  cutoff=None,
+):
     """Gets the ranked list of (directed) regulatory links.
 
     Parameters
@@ -52,10 +53,13 @@ def get_link_list(VIM,
         Writes only the first maxcount regulatory links of the ranked list. When maxcount is set to 'all', all the regulatory links are written.
         default: 'all'
 
-    file_name: string, optional
-        Writes the ranked list of regulatory links in the file file_name.
-        default: None
+    permute0: bool, optional
+        If True, randomly permute edges with a score of 0.
+        default: True
 
+    cutoff: positive value float or None, optional
+        If given, only return edges with score greater than cutoff
+        default: None
 
 
     Returns
@@ -102,9 +106,22 @@ def get_link_list(VIM,
         raise ValueError(
             'input argument maxcount must be "all" or a positive integer')
 
-    if file_name is not None and not isinstance(file_name, str):
-        raise ValueError('input argument file_name must be a string')
+    if cutoff is not None:
+        if not isinstance(cutoff, (int, float)):
+            raise ValueError(
+                'input argument cutoff must be None or a positive number')
 
+        if not cutoff >=0:
+            raise ValueError(
+                'input argument cutoff must be None or a positive number')
+
+    if not isinstance(permute0, bool):
+        raise ValueError(
+            'input argument permute0 must be True or False')
+
+
+
+    # Prepare result
     # Get the indices of the candidate regulators
     if regulators == 'all':
         input_idx = list(range(ngenes))
@@ -123,63 +140,84 @@ def get_link_list(VIM,
     vInter_sort = sorted(vInter, key=itemgetter(2), reverse=True)
     nInter = len(vInter_sort)
 
-    # Random permutation of edges with score equal to 0
-    flag = 1
-    i = 0
-    while flag and i < nInter:
-        (TF_idx, target_idx, score) = vInter_sort[i]
-        if score == 0:
-            flag = 0
-        else:
-            i += 1
+    if cutoff:
+        i = 0
+        for _, _, score in vInter_sort:
+            if score <= cutoff:
+                break
+            i +=1
+        vInter_sort = vInter_sort[:i]
+        nInter = len(vInter_sort)
 
-    if not flag:
-        items_perm = vInter_sort[i:]
-        items_perm = permutation(items_perm)
-        vInter_sort[i:] = items_perm
+    # Random permutation of edges with score equal to 0
+    if permute0:
+        flag = 1
+        i = 0
+        while flag and i < nInter:
+            (TF_idx, target_idx, score) = vInter_sort[i]
+            if score == 0:
+                flag = 0
+            else:
+                i += 1
+
+        if not flag:
+            items_perm = vInter_sort[i:]
+            items_perm = permutation(items_perm)
+            vInter_sort[i:] = items_perm
 
     # Write the ranked list of edges
     nToWrite = nInter
     if isinstance(maxcount, int) and maxcount >= 0 and maxcount < nInter:
         nToWrite = maxcount
 
-    if file_name:
-
-        outfile = open(file_name, 'w')
-
-        if gene_names is not None:
-            for i in range(nToWrite):
-                (TF_idx, target_idx, score) = vInter_sort[i]
-                TF_idx = int(TF_idx)
-                target_idx = int(target_idx)
-                outfile.write(
-                    '%s\t%s\t%.6f\n' %
-                    (gene_names[TF_idx], gene_names[target_idx], score))
-        else:
-            for i in range(nToWrite):
-                (TF_idx, target_idx, score) = vInter_sort[i]
-                TF_idx = int(TF_idx)
-                target_idx = int(target_idx)
-                outfile.write('G%d\tG%d\t%.6f\n' %
-                              (TF_idx + 1, target_idx + 1, score))
-
-        outfile.close()
-
+    if gene_names is not None:
+        for i in range(nToWrite):
+            (TF_idx, target_idx, score) = vInter_sort[i]
+            TF_idx = int(TF_idx)
+            target_idx = int(target_idx)
+            # print('%s\t%s\t%.6f' %
+            #      (gene_names[TF_idx], gene_names[target_idx], score))
+            yield (gene_names[TF_idx], gene_names[target_idx], score)
     else:
+        for i in range(nToWrite):
+            (TF_idx, target_idx, score) = vInter_sort[i]
+            TF_idx = int(TF_idx)
+            target_idx = int(target_idx)
+            # print('G%d\tG%d\t%.6f' % (TF_idx + 1, target_idx + 1, score))
+            yield (TF_idx + 1, target_idx + 1, score)
 
-        if gene_names is not None:
-            for i in range(nToWrite):
-                (TF_idx, target_idx, score) = vInter_sort[i]
-                TF_idx = int(TF_idx)
-                target_idx = int(target_idx)
-                print('%s\t%s\t%.6f' %
-                      (gene_names[TF_idx], gene_names[target_idx], score))
-        else:
-            for i in range(nToWrite):
-                (TF_idx, target_idx, score) = vInter_sort[i]
-                TF_idx = int(TF_idx)
-                target_idx = int(target_idx)
-                print('G%d\tG%d\t%.6f' % (TF_idx + 1, target_idx + 1, score))
+def write_link_list(file_name, *args, **kwargs):
+    """Writes the ranked list of (directed) regulatory links.
+
+    Parameters
+    ----------
+
+
+    file_name: string, optional
+        Writes the ranked list of regulatory links in the file file_name.
+        default: None
+
+    *args, **kwargs:
+        See get_link_list
+
+    Returns
+    -------
+
+    File name, of file containing the list of regulatory links, ordered according to the edge score. Auto-regulations do not appear in the list. Regulatory links with a score equal to zero are randomly permuted. In the ranked list of edges, each line has format:
+
+        regulator   target gene     score of edge
+    """
+
+    with open(file_name, 'w') as outfile:
+
+        for s, t, score in get_link_list(*args, **kwargs):
+            outfile.write(
+                '%s\t%s\t%.6f\n' %
+                (s, t, score))
+
+
+    print(f"Edges written to {file_name}")
+    return file_name
 
 
 def estimate_degradation_rates(TS_data, time_points):
