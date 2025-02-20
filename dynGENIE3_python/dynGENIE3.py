@@ -573,6 +573,9 @@ def dynGENIE3(TS_data,
 
             if compute_quality_scores:
                 if tree_method == 'RF':
+                    if np.isnan(prediction_score_i):
+                        print("Problem with gene %d" % i, gene_names[i])
+                        prediction_score_i = 0
                     prediction_score[i] = prediction_score_i
                 stability_score[i] = stability_score_i
 
@@ -594,6 +597,9 @@ def dynGENIE3(TS_data,
 
             if compute_quality_scores:
                 if tree_method == 'RF':
+                    if np.isnan(prediction_score_i):
+                        print("Problem with gene %d" % i, gene_names[i])
+                        prediction_score_i = 0
                     prediction_score[i] = prediction_score_i
                 stability_score[i] = stability_score_i
 
