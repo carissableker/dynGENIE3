@@ -1,0 +1,117 @@
+# Run on a smaller subset for testing code
+# Set to false to run all data in production
+TESTING: False
+
+# general dynGENIE3 settings
+nthreads: 120
+ntrees: 1000
+tree_method: 'RF'
+compute_quality_scores: True
+
+use_decays: True
+use_ss_data: True
+use_subset: True
+use_std_filter: True
+shuffle_replicates: True
+n_shuffle: 20
+
+inputs:
+  Mock:
+    input_folder: "../input/grn/Mock"
+    output_folder: "../output/grn/Mock/decay_shuffled"
+
+    # normalised RNA-seq timeseries and timepoints 
+    ts_file: "ts_data.tsv"
+
+    # normalised RNA-seq steady state data files, optional
+    ss_file: "ss_data.tsv"
+
+    # list of transcription factors, optional - use to limit potential GRN edge sources
+    tfs_file: "tfs.tsv"
+
+    # decay rates, optional, use to improve GRN prediction 
+    decays: "decays.tsv"
+
+    # subset of genes to use in GRN inference
+    gene_subset_file: "subset_list.tsv"
+    gene_subset_std: 0.5
+
+  ABA:
+    input_folder: "../input/grn/ABA"
+    output_folder: "../output/grn/ABA/decay_shuffled"
+
+    # normalised RNA-seq timeseries and timepoints 
+    ts_file: "ts_data.tsv"
+
+    # normalised RNA-seq steady state data files, optional
+    ss_file: "ss_data.tsv"
+
+    # list of transcription factors, optional - use to limit potential GRN edge sources
+    tfs_file: "tfs.tsv"
+
+    # decay rates, optional, use to improve GRN prediction 
+    decays: "decays.tsv"
+
+    # subset of genes to use in GRN inference
+    gene_subset_file: "subset_list.tsv"
+    gene_subset_std: 0.5
+
+  JA:
+    input_folder: "../input/grn/JA"
+    output_folder: "../output/grn/JA/decay_shuffled"
+
+    # normalised RNA-seq timeseries and timepoints 
+    ts_file: "ts_data.tsv"
+
+    # normalised RNA-seq steady state data files, optional
+    ss_file: "ss_data.tsv"
+
+    # list of transcription factors, optional - use to limit potential GRN edge sources
+    tfs_file: "tfs.tsv"
+
+    # decay rates, optional, use to improve GRN prediction 
+    decays: "decays.tsv"
+
+    # subset of genes to use in GRN inference
+    gene_subset_file: "subset_list.tsv"
+    gene_subset_std: 0.5
+
+  ABAJA:
+    input_folder: "../input/grn/ABAJA"
+    output_folder: "../output/grn/ABAJA/decay_shuffled"
+
+    # normalised RNA-seq timeseries and timepoints 
+    ts_file: "ts_data.tsv"
+
+    # normalised RNA-seq steady state data files, optional
+    ss_file: "ss_data.tsv"
+
+    # list of transcription factors, optional - use to limit potential GRN edge sources
+    tfs_file: "tfs.tsv"
+
+    # decay rates, optional, use to improve GRN prediction 
+    decays: "decays.tsv"
+
+    # subset of genes to use in GRN inference
+    gene_subset_file: "subset_list.tsv"
+    gene_subset_std: 0.5
+
+  ALL:
+    input_folder: "../input/grn/ALL"
+    output_folder: "../output/grn/ALL/decay_shuffled"
+
+    # normalised RNA-seq timeseries and timepoints 
+    ts_file: "ts_data.tsv"
+
+    # normalised RNA-seq steady state data files, optional
+    ss_file: "ss_data.tsv"
+
+    # list of transcription factors, optional - use to limit potential GRN edge sources
+    tfs_file: "tfs.tsv"
+
+    # decay rates, optional, use to improve GRN prediction 
+    decays: "decays.tsv"
+
+    # subset of genes to use in GRN inference
+    gene_subset_file: "subset_list.tsv"
+    gene_subset_std: 0.5
